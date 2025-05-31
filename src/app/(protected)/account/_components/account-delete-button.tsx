@@ -27,7 +27,7 @@ export default function AccountDeleteButton({
 }: AccountDeleteButtonProps) {
   async function handleDelete() {
     await deleteUserSaveReview({ questionOne, message });
-    await logoutAndRedirect();
+    await logoutAndRedirect(null);
   }
 
   return (
