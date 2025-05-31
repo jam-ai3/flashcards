@@ -20,6 +20,8 @@ model User {
   subscriptions Subscription[]
   groups        FlashcardGroup[]
   sales         Sale[]
+  reviews       Review[]
+  resetPassword ResetPassword[]
 }
 
 model Subscription {
@@ -73,4 +75,37 @@ model Sale {
   couponCode         String?
 
   user User @relation(fields: [userId], references: [id], onDelete: NoAction)
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int
+  message   String
+  createdAt DateTime @default(now())
+
+  userId String @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id      String @id @default(uuid())
+  name    String
+  email   String
+  message String
+}
+
+model DeleteResponse {
+  id          String @id @default(uuid())
+  email       String
+  questionOne String
+  message     String
+}
+
+model ResetPassword {
+  id         String   @id @default(uuid())
+  code       String   @unique
+  validUntil DateTime
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

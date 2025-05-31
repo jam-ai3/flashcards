@@ -22,9 +22,9 @@ export default function StudyView({ flashcards }: StudyViewProps) {
   }
 
   return (
-    <div className="grid place-items-center h-full">
+    <div className="place-items-center grid h-page">
       <FlashcardView flashcard={flashcards[index]} />
-      <div className="absolute bottom-8 w-3/4 flex justify-between">
+      <div className="bottom-8 absolute flex justify-between w-3/4">
         <Button onClick={handleBack} disabled={index <= 0}>
           <ArrowLeft />
           <span>Back</span>
@@ -58,7 +58,7 @@ function FlashcardView({ flashcard }: FlashcardViewProps) {
       onClick={() => setSide(side === "front" ? "back" : "front")}
     >
       <motion.div
-        className="absolute inset-0 flex items-center justify-center border-2 rounded-xl p-6 bg-white"
+        className="absolute inset-0 flex justify-center items-center bg-white p-6 border-2 rounded-xl"
         initial={{ rotateY: 0 }}
         animate={{ rotateY: side === "front" ? 0 : 180 }}
         transition={{ duration: 0.5 }}
@@ -67,7 +67,7 @@ function FlashcardView({ flashcard }: FlashcardViewProps) {
         <p className="text-sm md:text-lg text-center">{flashcard.front}</p>
       </motion.div>
       <motion.div
-        className="absolute inset-0 flex items-center justify-center border-2 rounded-xl p-6 bg-secondary"
+        className="absolute inset-0 flex justify-center items-center bg-secondary p-6 border-2 rounded-xl"
         initial={{ rotateY: -180 }}
         animate={{ rotateY: side === "front" ? -180 : 0 }}
         transition={{ duration: 0.5 }}

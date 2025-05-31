@@ -17,7 +17,7 @@ const LOGO_SIZE = 64;
 
 export default function MobileHeader({ session }: HeaderProps) {
   return (
-    <nav className="flex justify-between items-center">
+    <nav className="flex justify-between items-center h-header-mobile">
       <Link href="/" className="flex items-center gap-2">
         <Image
           src="/logo-no-bg.png"

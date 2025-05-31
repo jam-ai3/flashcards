@@ -8,19 +8,19 @@ export default async function HomePage() {
   if (!session) redirect(LANDING_PAGE_URL);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
-      <section className="flex flex-col gap-4 justify-center items-center">
-        <h2 className="font-semibold text-2xl lg:text-4xl">
+    <main className="grid grid-cols-1 lg:grid-cols-2 px-6 h-page">
+      <section className="flex flex-col justify-center items-center gap-4">
+        <h2 className="font-semibold text-xl lg:text-4xl">
           Generate flashcards
         </h2>
-        <p className="text-center w-3/4 text-muted-foreground text-md lg:text-lg">
+        <p className="w-3/4 text-md text-muted-foreground lg:text-lg text-center">
           Upload your notes, syllabus, or some information about your course to
           get started generating flashcards.
         </p>
       </section>
-      <section className="grid items-center">
+      <section className="items-center grid">
         <GenerateForm userId={session.id} />
       </section>
-    </div>
+    </main>
   );
 }

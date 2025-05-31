@@ -1,8 +1,10 @@
 "use server";
 
 import { jwtVerify, SignJWT } from "jose";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { Session } from "./types";
+import { APP_URL } from "./constants";
+import { redirect } from "next/navigation";
 
 const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET!);
 
@@ -52,4 +54,20 @@ export async function getSession() {
     return decoded;
   }
   return null;
+}
+
+export async function logoutAndRedirect(
+  _: unknown,
+  redirectTo: string = APP_URL
+) {
+  (await cookies()).set(process.env.JWT_KEY!, "", {
+    path: "/",
+    domain: process.env.DOMAIN,
+    expires: new Date(0),
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
+
+  redirect(redirectTo);
 }

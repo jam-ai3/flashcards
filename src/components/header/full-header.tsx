@@ -14,7 +14,7 @@ const LOGO_SIZE = 64;
 
 export default function FullHeader({ session }: HeaderProps) {
   return (
-    <nav className="flex justify-between items-center">
+    <nav className="flex justify-between items-center px-6 h-header">
       <Link href="/" className="flex items-center gap-2">
         <Image
           src="/logo-no-bg.png"

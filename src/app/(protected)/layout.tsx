@@ -1,20 +1,26 @@
 import Header from "@/components/header/header";
+import { SessionProvider } from "@/contexts/session-provider";
+import { getSession } from "@/lib/auth";
+import { LOGIN_PAGE_URL } from "@/lib/constants";
 import { Metadata } from "next";
-import React from "react";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   robots: "noindex, nofollow",
 };
 
-export default function ProtectedLayout({
+export default async function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getSession();
+  if (!session?.id) redirect(LOGIN_PAGE_URL);
+
   return (
-    <main className="flex flex-col gap-6 p-8 h-screen">
+    <>
       <Header />
-      {children}
-    </main>
+      <SessionProvider session={session}>{children}</SessionProvider>
+    </>
   );
 }

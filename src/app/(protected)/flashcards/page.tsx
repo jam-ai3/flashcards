@@ -29,7 +29,7 @@ export default async function GroupsPage() {
 
   if (!groups || groups.length === 0) {
     return (
-      <div className="place-items-center grid h-full">
+      <main className="place-items-center grid h-page">
         <div className="flex flex-col items-center gap-4">
           <p className="font-semibold text-lg">No Flashcard Sets Created</p>
           <p className="text-muted-foreground text-center">
@@ -42,37 +42,39 @@ export default async function GroupsPage() {
             </Link>
           </Button>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <ul className="flex flex-col gap-2 pb-4">
-      {groups.map((group, index) => (
-        <li
-          key={group.id}
-          className="flex justify-between items-center bg-secondary px-4 py-2 border rounded-md text-primary"
-        >
-          <Link href={`/flashcards/${group.id}`}>
-            <div className="flex items-center gap-4">
-              {group.error === null ? (
-                <CircleCheck />
-              ) : (
-                <CircleX className="text-destructive" />
-              )}
-              <div>
-                <p className="font-semibold">
-                  Generation #{index + 1} - {group._count.cards} cards
-                </p>
-                <p className="text-muted-foreground">
-                  {group.createdAt.toLocaleString()}
-                </p>
+    <main className="px-6">
+      <ul className="flex flex-col gap-4 pb-4">
+        {groups.map((group, index) => (
+          <li
+            key={group.id}
+            className="flex justify-between items-center bg-secondary px-4 py-2 border rounded-md text-primary"
+          >
+            <Link href={`/flashcards/${group.id}`}>
+              <div className="flex items-center gap-4">
+                {group.error === null ? (
+                  <CircleCheck />
+                ) : (
+                  <CircleX className="text-destructive" />
+                )}
+                <div>
+                  <p className="font-semibold">
+                    Generation #{index + 1} - {group._count.cards} cards
+                  </p>
+                  <p className="text-muted-foreground">
+                    {group.createdAt.toLocaleString()}
+                  </p>
+                </div>
               </div>
-            </div>
-          </Link>
-          <DeleteButton groupId={group.id} />
-        </li>
-      ))}
-    </ul>
+            </Link>
+            <DeleteButton groupId={group.id} />
+          </li>
+        ))}
+      </ul>
+    </main>
   );
 }

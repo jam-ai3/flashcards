@@ -68,13 +68,15 @@ export default function FlashcardGrid({
   }
 
   return (
-    <>
+    <main className="space-y-4 px-6 h-page">
       <div className="flex md:flex-row flex-col md:justify-between md:items-center gap-4">
         <div>
           <div className="flex gap-2">
             <Link href="/flashcards" className="flex items-center gap-2">
-              <ArrowLeft className="text-muted-foreground" size={16} />
-              <span>Flashcard Decks</span>
+              <ArrowLeft className="text-muted-foreground" size={12} />
+              <span className="text-muted-foreground text-sm">
+                Flashcard Decks
+              </span>
             </Link>
           </div>
           {group.paymentType === "free" && (
@@ -153,7 +155,7 @@ export default function FlashcardGrid({
           ))}
         </div>
       )}
-    </>
+    </main>
   );
 }
 
