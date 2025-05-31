@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  previewFeatures = ["driverAdapters", "prismaSchemaFolder"]
 }
 
 datasource db {
@@ -9,62 +9,82 @@ datasource db {
 }
 
 model User {
-  id             String    @id @default(uuid())
-  email          String    @unique
-  password       String
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  isAdmin        Boolean   @default(false)
-  freeTrialStart DateTime?
-
-  subscriptions Subscription[]
-  groups        FlashcardGroup[]
-  sales         Sale[]
-  reviews       Review[]
-  resetPassword ResetPassword[]
-}
-
-model Subscription {
-  id            String   @id @default(uuid())
-  createdAt     DateTime @default(now())
-  expiresAt     DateTime
-  generatesUsed Int      @default(0)
-  type          String
-  isActive      Boolean  @default(true)
-  stripeId      String   @unique
-
-  userId String @unique
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model FlashcardGroup {
-  id          String   @id @default(uuid())
-  createdAt   DateTime @default(now())
-  // title       String
-  prompt      String
-  error       String?
-  paymentType String
-  inputType   String
-  inputFormat String
-
-  userId String
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  cards Flashcard[]
-}
-
-model Flashcard {
   id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
   createdAt DateTime @default(now())
-  front     String
-  back      String
+  updatedAt DateTime @updatedAt
+  isAdmin   Boolean  @default(false)
 
-  groupId String
-
-  group FlashcardGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  flashcardDecks FlashcardDeck[]
+  resetPassword  ResetPassword[]
+  subscriptions  Subscription[]
+  sales          Sale[]
+  Review         Review?
 }
+
+/**
+ * CREATE TABLE IF NOT EXISTS User (
+ * id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+ * email TEXT UNIQUE NOT NULL,
+ * password TEXT NOT NULL,
+ * createdAt TEXT DEFAULT datetime('now'),
+ * updatedAt TEXT DEFAULT datetime('now'),
+ * isAdmin INTEGER DEFAULT 0
+ * );
+ */
+
+model School {
+  id   String @id @default(uuid())
+  name String
+
+  courses Course[]
+}
+
+/**
+ * CREATE TABLE IF NOT EXISTS School (
+ * id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+ * name TEXT NOT NULL
+ * );
+ */
+
+model Course {
+  id   String @id @default(uuid())
+  name String
+
+  schoolId String
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: NoAction)
+
+  decks FlashcardDeck[]
+}
+
+/**
+ * CREATE TABLE IF NOT EXISTS Course (
+ * id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+ * name TEXT NOT NULL,
+ * schoolId TEXT NOT NULL,
+ * FOREIGN KEY (schoolId) REFERENCES School(id)
+ * );
+ */
+
+model ResetPassword {
+  id         String   @id @default(uuid())
+  code       String   @unique
+  validUntil DateTime
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/**
+ * CREATE TABLE IF NOT EXISTS ResetPassword (
+ * id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+ * code TEXT NOT NULL,
+ * validUntil TEXT NOT NULL,
+ * userId TEXT NOT NULL,
+ * FOREIGN KEY (userId) REFERENCES User(id)
+ * );
+ */
 
 model Sale {
   id                 String   @id @default(uuid())
@@ -77,6 +97,144 @@ model Sale {
   user User @relation(fields: [userId], references: [id], onDelete: NoAction)
 }
 
+/**
+ * CREATE TABLE IF NOT EXISTS Sale (
+ * id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+ * productId TEXT NOT NULL,
+ * userId TEXT NOT NULL,
+ * pricePaidInPennies INTEGER NOT NULL,
+ * createdAt TEXT DEFAULT datetime('now'),
+ * couponCode TEXT,
+ * FOREIGN KEY(userId) REFERENCES User(id)
+ * );
+ */
+
+model Subscription {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  type      String
+  isActive  Boolean  @default(true)
+  stripeId  String   @unique
+
+  userId String @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/**
+ * CREATE TABLE IF NOT EXISTS Subscription (
+ * id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+ * createdAt TEXT DEFAULT datetime('now'),
+ * expiresAt TEXT,
+ * type TEXT,
+ * isActive INTEGER DEFAULT 1,
+ * stripeId TEXT UNIQUE,
+ * userId TEXT UNIQUE,
+ * FOREIGN KEY(userId) REFERENCES User(id)
+ * );
+ */
+
+model FlashcardDeck {
+  id   String @id @default(uuid())
+  name String
+
+  userId   String
+  courseId String?
+  logId    String  @unique
+
+  user   User        @relation(fields: [userId], references: [id], onDelete: NoAction)
+  course Course?     @relation(fields: [courseId], references: [id], onDelete: NoAction)
+  log    CreationLog @relation(fields: [logId], references: [id], onDelete: NoAction)
+
+  flashcards Flashcard[]
+}
+
+/**
+ * CREATE TABLE IF NOT EXISTS FlashcardDeck (
+ * id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+ * name TEXT NOT NULL,
+ * userId TEXT NOT NULL,
+ * courseId TEXT,
+ * logId TEXT NOT NULL UNIQUE,
+ * FOREIGN KEY(userId) REFERENCES User(id),
+ * FOREIGN KEY(courseId) REFERENCES Course(id),
+ * FOREIGN KEY(logId) REFERENCES CreationLog(id)
+ * );
+ */
+
+model Flashcard {
+  id    String @id @default(uuid())
+  front String // html content
+  back  String // html content
+  type  String
+
+  deckId String
+
+  deck FlashcardDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  media Media[]
+}
+
+/**
+ * CREATE TABLE IF NOT EXISTS Flashcard (
+ * id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+ * front TEXT NOT NULL,
+ * back TEXT NOT NULL,
+ * type TEXT NOT NULL,
+ * deckId TEXT NOT NULL,
+ * FOREIGN KEY(deckId) REFERENCES FlashcardDeck(id)
+ * );
+ */
+
+model CreationLog {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  prompt      String
+  error       String?
+  paymentType String
+  inputType   String
+  inputFormat String
+
+  userId String
+
+  deck FlashcardDeck?
+}
+
+/**
+ * CREATE TABLE IF NOT EXISTS CreationLog (
+ * id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+ * createdAt TEXT NOT NULL DEFAULT datetime('now'),
+ * prompt TEXT NOT NULL,
+ * error TEXT,
+ * paymentType TEXT NOT NULL,
+ * inputType TEXT NOT NULL,
+ * inputFormat TEXT NOT NULL,
+ * userId TEXT NOT NULL,
+ * FOREIGN KEY(userId) REFERENCES User(id)
+ * );
+ */
+
+model Media {
+  id        String @id @default(uuid())
+  data      Bytes
+  extension String
+
+  flashcardId String
+
+  flashcard Flashcard @relation(fields: [flashcardId], references: [id], onDelete: NoAction)
+}
+
+/**
+ * CREATE TABLE IF NOT EXISTS Media (
+ * id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+ * data BLOB NOT NULL,
+ * extension TEXT NOT NULL,
+ * flashcardId TEXT NOT NULL,
+ * FOREIGN KEY(flashcardId) REFERENCES Flashcard(id)
+ * );
+ */
+
 model Review {
   id        String   @id @default(uuid())
   rating    Int
@@ -88,12 +246,32 @@ model Review {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+/**
+ * CREATE TABLE IF NOT EXISTS Review (
+ * id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+ * rating INTEGER NOT NULL,
+ * message TEXT NOT NULL,
+ * createdAt TEXT DEFAULT datetime('now'),
+ * userId TEXT NOT NULL,
+ * FOREIGN KEY(userId) REFERENCES User(id)
+ * );
+ */
+
 model Message {
   id      String @id @default(uuid())
   name    String
   email   String
   message String
 }
+
+/**
+ * CREATE TABLE IF NOT EXISTS Message (
+ * id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+ * name TEXT NOT NULL,
+ * email TEXT NOT NULL,
+ * message TEXT NOT NULL
+ * );
+ */
 
 model DeleteResponse {
   id          String @id @default(uuid())
@@ -102,10 +280,11 @@ model DeleteResponse {
   message     String
 }
 
-model ResetPassword {
-  id         String   @id @default(uuid())
-  code       String   @unique
-  validUntil DateTime
-  userId     String   @unique
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
+/**
+ * CREATE TABLE IF NOT EXISTS DeleteResponse (
+ * id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+ * email TEXT NOT NULL,
+ * questionOne TEXT NOT NULL,
+ * message TEXT NOT NULL
+ * );
+ */
