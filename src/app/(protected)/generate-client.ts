@@ -9,6 +9,7 @@ import {
 } from "@/lib/types";
 import { z } from "zod";
 import {
+  createErrorLog,
   createFlashcards,
   getPaymentOptions,
   serverRedirect,
@@ -30,12 +31,12 @@ const generateSchema = z.object({
 });
 
 export async function handleGenerate(
-  groupId: string,
   userId: string,
   inputType: InputType,
   _: unknown,
   data: FormData
 ) {
+  const deckId = crypto.randomUUID();
   try {
     // parse form data
     const result = generateSchema.safeParse(Object.fromEntries(data.entries()));
@@ -64,7 +65,7 @@ export async function handleGenerate(
       inputType,
       inputFormat: result.data.format,
       paymentType,
-      groupId,
+      deckId,
       userId,
       text: result.data.text,
       pdf: result.data.pdf,
@@ -72,10 +73,21 @@ export async function handleGenerate(
       image: result.data.image,
       courseInfo,
     });
-    if (isError(cards)) return cards;
+
+    if (isError(cards)) {
+      await createErrorLog(
+        userId,
+        "prompt",
+        paymentType,
+        inputType,
+        result.data.format,
+        cards.error
+      );
+      return cards;
+    }
 
     const res = await createFlashcards(
-      groupId,
+      deckId,
       userId,
       paymentType,
       inputType,
@@ -85,7 +97,7 @@ export async function handleGenerate(
     );
     if (isError(res)) return res;
 
-    await serverRedirect(`/flashcards/${groupId}`);
+    await serverRedirect(`/flashcards/${deckId}`);
 
     // unreachable
     return { error: undefined };
@@ -107,7 +119,7 @@ type GenerateArgs = {
   inputType: InputType;
   inputFormat: InputFormat;
   paymentType: PaymentType;
-  groupId: string;
+  deckId: string;
   userId: string;
   text?: string;
   pdf?: File;
@@ -120,7 +132,7 @@ async function generateFlashcards({
   inputType,
   inputFormat,
   paymentType,
-  groupId,
+  deckId,
   userId,
   text,
   pdf,
@@ -136,7 +148,7 @@ async function generateFlashcards({
         inputType,
         inputFormat,
         paymentType,
-        groupId,
+        deckId,
         userId,
       })
     );

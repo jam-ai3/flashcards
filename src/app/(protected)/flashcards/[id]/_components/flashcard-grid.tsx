@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { MAX_FREE_TIER_FLASHCARDS } from "@/lib/constants";
 import { exportCsv } from "@/lib/utils";
-import { Flashcard, FlashcardGroup } from "@prisma/client";
+import { Flashcard } from "@prisma/client";
 import {
   ArrowLeft,
   Book,
@@ -26,15 +26,20 @@ import Link from "next/link";
 import { useState } from "react";
 import { deleteFlashcards } from "../../_actions/flashcard";
 import { useRouter } from "next/navigation";
+import { PaymentType } from "@/lib/types";
 
 type FlashcardGridProps = {
-  group: FlashcardGroup;
+  deckId: string;
   flashcards: Flashcard[];
+  paymentType: PaymentType;
+  error: string | null;
 };
 
 export default function FlashcardGrid({
-  group,
+  deckId,
   flashcards,
+  paymentType,
+  error,
 }: FlashcardGridProps) {
   const router = useRouter();
   const [selected, setSelected] = useState<Flashcard[]>([]);
@@ -79,7 +84,7 @@ export default function FlashcardGrid({
               </span>
             </Link>
           </div>
-          {group.paymentType === "free" && (
+          {paymentType === "free" && (
             <div className="flex items-center gap-2 text-yellow-500">
               <Info />
               <p>
@@ -91,7 +96,7 @@ export default function FlashcardGrid({
         </div>
         <div className="flex items-center gap-4">
           <Button asChild variant="ghost">
-            <Link href={`/study/${group.id}`}>
+            <Link href={`/study/${deckId}`}>
               <Book className="text-primary" />
               <span className="text-primary">Study</span>
             </Link>
@@ -132,7 +137,7 @@ export default function FlashcardGrid({
           </Button>
         </div>
       </div>
-      {group.error ? (
+      {error ? (
         <div className="place-items-center grid h-full">
           <div className="flex flex-col items-center gap-2">
             <p className="font-semibold text-xl">

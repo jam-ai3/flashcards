@@ -1,6 +1,7 @@
 import db from "@/db/db";
 import FlashcardGrid from "./_components/flashcard-grid";
 import { notFound } from "next/navigation";
+import { PaymentType } from "@/lib/types";
 
 type FlashcardsPageProps = {
   params: Promise<{ id: string }>;
@@ -8,14 +9,32 @@ type FlashcardsPageProps = {
 
 export default async function FlashcardsPage({ params }: FlashcardsPageProps) {
   const { id } = await params;
-  const [group, flashcards] = await Promise.all([
-    db.flashcardGroup.findUnique({ where: { id } }),
-    db.flashcard.findMany({ where: { groupId: id } }),
+  const [deck, flashcards] = await Promise.all([
+    db.flashcardDeck.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        log: {
+          select: {
+            error: true,
+            paymentType: true,
+          },
+        },
+      },
+    }),
+    db.flashcard.findMany({ where: { deckId: id } }),
   ]);
 
-  if (!group) {
+  if (!deck) {
     return notFound();
   }
 
-  return <FlashcardGrid group={group} flashcards={flashcards} />;
+  return (
+    <FlashcardGrid
+      deckId={deck.id}
+      flashcards={flashcards}
+      paymentType={deck.log.paymentType as PaymentType}
+      error={deck.log.error}
+    />
+  );
 }

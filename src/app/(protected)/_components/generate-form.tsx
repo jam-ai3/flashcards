@@ -24,7 +24,7 @@ import { useActionState, useState } from "react";
 import { CustomError } from "@/lib/utils";
 import { InputFormat, InputType } from "@/lib/types";
 import { Loader2 } from "lucide-react";
-import { handleGenerate } from "../_actions/generate-client";
+import { handleGenerate } from "../generate-client";
 
 type GenerateError = {
   format?: string[];
@@ -44,10 +44,9 @@ type GenerateFormProps = {
 };
 
 export default function GenerateForm({ userId }: GenerateFormProps) {
-  const [groupId] = useState(crypto.randomUUID());
   const [inputType, setInputType] = useState<InputType>("notes");
   const [error, action, isPending] = useActionState(
-    handleGenerate.bind(null, groupId, userId, inputType),
+    handleGenerate.bind(null, userId, inputType),
     {}
   );
 
@@ -76,7 +75,7 @@ export default function GenerateForm({ userId }: GenerateFormProps) {
   return (
     <Card>
       <CardHeader className="space-y-2">
-        <CardTitle className="flex flex-col items-start lg:flex-row lg:justify-between lg:items-center gap-4">
+        <CardTitle className="flex lg:flex-row flex-col lg:justify-between items-start lg:items-center gap-4">
           <span>Information</span>
           <div className="flex gap-2">
             <Button
@@ -240,10 +239,7 @@ function SyllabusInput({ error }: InputProps) {
           name="format"
           required
           value={format}
-          onValueChange={(e) => {
-            setFormat(e as InputFormat);
-            console.log(e);
-          }}
+          onValueChange={(e) => setFormat(e as InputFormat)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Choose an Input Format" />

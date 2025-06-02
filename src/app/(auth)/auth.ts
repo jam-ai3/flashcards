@@ -8,7 +8,6 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { OAuth2Client } from "google-auth-library";
-import { NextResponse } from "next/server";
 import { APP_URL } from "@/lib/constants";
 
 const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
@@ -125,10 +124,7 @@ export async function handleEmailSending(
   const result = resetPasswordSchemaEmail.safeParse(
     Object.fromEntries(data.entries())
   );
-  if (!result.success)
-    return {
-      ...result.error.formErrors.fieldErrors,
-    };
+  if (!result.success) return result.error.formErrors.fieldErrors;
 
   const user = await db.user.findUnique({
     where: { email: result.data.email },
@@ -235,7 +231,10 @@ function generateResetCode(): string {
 
 const client = new OAuth2Client(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
 
-export async function handleGoogleLogin(token: string) {
+export async function handleGoogleLogin(
+  response: google.accounts.id.CredentialResponse
+) {
+  const token = response.credential;
   const ticket = await client.verifyIdToken({
     idToken: token,
     audience: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
@@ -275,5 +274,5 @@ export async function handleGoogleLogin(token: string) {
     path: "/",
   });
 
-  return NextResponse.redirect(APP_URL);
+  // return NextResponse.redirect(APP_URL);
 }

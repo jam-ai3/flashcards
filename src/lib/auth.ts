@@ -5,6 +5,7 @@ import { cookies, headers } from "next/headers";
 import { Session } from "./types";
 import { APP_URL } from "./constants";
 import { redirect } from "next/navigation";
+import db from "@/db/db";
 
 const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET!);
 
@@ -45,15 +46,16 @@ export async function getSession() {
     .get("cookie")
     ?.split("; ")
     .filter((v) => v.startsWith(process.env.JWT_KEY!));
-  if (jwt === undefined || jwt.length === 0) {
-    return null;
-  }
+  if (jwt === undefined || jwt.length === 0) return null;
+
   const token = jwt[0].split("=")[1];
-  if (token) {
-    const decoded = await verifyToken(token);
-    return decoded;
-  }
-  return null;
+  if (!token) return null;
+
+  const decoded = await verifyToken(token);
+  if (!decoded) return null;
+  const user = await db.user.findUnique({ where: { id: decoded.id } });
+  if (!user) return null;
+  return decoded;
 }
 
 export async function logoutAndRedirect(

@@ -13,15 +13,15 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 type DeleteButtonProps = {
-  groupId: string;
+  deckId: string;
 };
 
-export default function DeleteButton({ groupId }: DeleteButtonProps) {
+export default function DeleteButton({ deckId }: DeleteButtonProps) {
   const router = useRouter();
 
   async function handleDelete() {
     try {
-      await deleteGroup(groupId);
+      await deleteGroup(deckId);
       router.refresh();
     } catch {}
   }

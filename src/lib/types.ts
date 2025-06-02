@@ -10,11 +10,24 @@ export type RawFlashcard = {
 
 export type PaymentResult = {
   subscriptionType: "free" | "subscription" | null;
-  subscriptionGeneratesUsed: number | null;
 };
 
 export type Session = {
   id: string;
   email: string;
   isAdmin: boolean;
+};
+
+export type Note = {
+  id: number;
+  guid: string;
+  mid: number;
+  mod: number;
+  usn: number;
+  tags: string;
+  flds: string;
+  sfld: string;
+  cusm: number;
+  flags: number;
+  data: string;
 };

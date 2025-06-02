@@ -7,7 +7,7 @@ type StudyPageProps = {
 
 export default async function StudyPage({ params }: StudyPageProps) {
   const { id } = await params;
-  const flashcards = await db.flashcard.findMany({ where: { groupId: id } });
+  const flashcards = await db.flashcard.findMany({ where: { deckId: id } });
 
   return <StudyView flashcards={flashcards} />;
 }

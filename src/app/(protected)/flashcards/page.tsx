@@ -10,24 +10,30 @@ import DeleteButton from "./_components/delete-btn";
 export default async function GroupsPage() {
   const session = await getSession();
   if (!session) redirect(LANDING_PAGE_URL);
-  const groups = await db.flashcardGroup.findMany({
+  const decks = await db.flashcardDeck.findMany({
     where: { userId: session.id },
     select: {
       id: true,
-      error: true,
-      createdAt: true,
+      log: {
+        select: {
+          error: true,
+          createdAt: true,
+        },
+      },
       _count: {
         select: {
-          cards: true,
+          flashcards: true,
         },
       },
     },
     orderBy: {
-      createdAt: "desc",
+      log: {
+        createdAt: "desc",
+      },
     },
   });
 
-  if (!groups || groups.length === 0) {
+  if (!decks || decks.length === 0) {
     return (
       <main className="place-items-center grid h-page">
         <div className="flex flex-col items-center gap-4">
@@ -49,29 +55,29 @@ export default async function GroupsPage() {
   return (
     <main className="px-6">
       <ul className="flex flex-col gap-4 pb-4">
-        {groups.map((group, index) => (
+        {decks.map((deck, index) => (
           <li
-            key={group.id}
+            key={deck.id}
             className="flex justify-between items-center bg-secondary px-4 py-2 border rounded-md text-primary"
           >
-            <Link href={`/flashcards/${group.id}`}>
+            <Link href={`/flashcards/${deck.id}`}>
               <div className="flex items-center gap-4">
-                {group.error === null ? (
+                {deck.log.error === null ? (
                   <CircleCheck />
                 ) : (
                   <CircleX className="text-destructive" />
                 )}
                 <div>
                   <p className="font-semibold">
-                    Generation #{index + 1} - {group._count.cards} cards
+                    Generation #{index + 1} - {deck._count.flashcards} cards
                   </p>
                   <p className="text-muted-foreground">
-                    {group.createdAt.toLocaleString()}
+                    {deck.log.createdAt.toLocaleString()}
                   </p>
                 </div>
               </div>
             </Link>
-            <DeleteButton groupId={group.id} />
+            <DeleteButton deckId={deck.id} />
           </li>
         ))}
       </ul>
