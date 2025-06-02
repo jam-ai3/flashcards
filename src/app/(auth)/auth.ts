@@ -274,5 +274,5 @@ export async function handleGoogleLogin(
     path: "/",
   });
 
-  // return NextResponse.redirect(APP_URL);
+  redirect(APP_URL);
 }
